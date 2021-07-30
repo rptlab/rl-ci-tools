@@ -1,5 +1,6 @@
-VERSION='0.0.4'
+VERSION='0.0.5'
 import os, sys, glob, time, json, io
+from urllib.parse import quote as urlQuote
 PROG=os.path.basename(sys.argv[0])
 debug=verbosity=0
 
@@ -204,6 +205,23 @@ def showEnv(outf):
     for i in I:
         out(fmt.format(*i))
 
+def pkgName(pkg):
+    x = [pkg.find(_) for _ in '<>=' if _ in pkg]
+    if x: pkg = pkg[:min(x)]
+    return pkg
+
+def pipInstall(u,p, pkg):
+    i = '-ihttps://%s:%s@www.reportlab.com/pypi' % (urlQuote(u),urlQuote(p))
+    #os.system(f"{sys.executable} -mpip install {i} {pkg}")
+    import subprocess
+    p = subprocess.Popen(
+            [sys.executable, '-mpip', 'install', i, pkg],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            )
+    out = p.communicate(timeout=30)[0]
+    print(out.decode('utf8').replace('\r\n','\n').replace(u,'***'))
+
 def main():
     u = os.environ.get('CITOOLS_USER','beta')
     p = os.environ.get('CITOOLS_PASSWORD','???')
@@ -245,7 +263,7 @@ def main():
             recur = True
         tabulate([_file_info(i) for i in _list_fs(sys.argv[2:],recur)])
     elif cmd=='help':
-        print('Usage %s [test|info|env|download-[resources|packages]|upload-[resources|packages]|[packages|resources]-info] path....' % PROG)
+        print('Usage %s [test|info|env|env-upload|rl-pip-install|download-[resources|packages]|upload-[resources|packages]|[packages|resources]-info] path....' % PROG)
     else:
         pypi = PyPiRequestor(debug=debug)
         if cmd=='test':
@@ -293,7 +311,12 @@ def main():
             outf = io.BytesIO()
             showEnv(outf)
             outf.seek(0)
-            pypi.upload(u,p,'cache','environ','info',readable=outf)
+            fn = 'environ-%s-python-%s' % (sys.platform,'.'.join((str(_) for _ in sys.version_info[:3])))
+            pypi.upload(u, p, 'cache', fn, 'info', readable=outf)
+        elif cmd=='rl-pip-install':
+            for pkg in sys.argv[2:]:
+                pipInstall(u, p, pkg)
+
         else:
             raise ValueError('%s: unknown command %r' % (PROG,cmd))
 if __name__=='__main__':
