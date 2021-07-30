@@ -1,5 +1,5 @@
-VERSION='0.0.3'
-import os, sys, glob, time, json
+VERSION='0.0.4'
+import os, sys, glob, time, json, io
 PROG=os.path.basename(sys.argv[0])
 debug=verbosity=0
 
@@ -87,12 +87,13 @@ class PyPiRequestor():
             print('%s: %r --> %d rows' % (PROG, url, len(I)))
         return I
 
-    def upload(self,u,p,kind,fn,subdir=''):
+    def upload(self,u,p,kind,fn,subdir='',readable=None):
         self.login(u,p)
         if subdir:
             subdir = '/' + subdir
         url = '%s/pypi/upload-%s%s/' % (self.root,kind,subdir)
-        files= dict(file=(os.path.basename(fn),open(fn,'rb'),'application/octet-stream'))
+        if not readable: readable = open(fn,'rb')
+        files= dict(file=(os.path.basename(fn),readable,'application/octet-stream'))
         resp = self.session.post(url,
                 data=dict(csrfmiddlewaretoken=self.session.cookies['csrftoken']),
                 files=files,
@@ -192,6 +193,17 @@ def tabulate(I,
         fmt = fmtmpl8 % tuple(W)
         print('\n'.join(fmt.format(*i) for i in rows))
 
+def showEnv(outf):
+    out = lambda s: outf.write((s+'\n').encode('utf8'))
+    out('Environment')
+    out('===========')
+    I = list(sorted(os.environ.items()))
+    i = max([len(i[0]) for i in I])
+    out(('{:<%d}    {}' % i).format('Key','Value'))
+    fmt  = '{:<%d} = {}' % i
+    for i in I:
+        out(fmt.format(*i))
+
 def main():
     u = os.environ.get('CITOOLS_USER','beta')
     p = os.environ.get('CITOOLS_PASSWORD','???')
@@ -225,14 +237,7 @@ def main():
     except:
         cmd = 'help'
     if cmd=='env':
-        print('Environment')
-        print('===========')
-        I = list(sorted(os.environ.items()))
-        i = max([len(i[0]) for i in I])
-        print(('{:<%d}  {}' % i).format('Key','Value'))
-        fmt  = '{:<%d} = {}' % i
-        for i in I:
-            print(fmt.format(*i))
+        showEnv(sys.stdout)
     elif cmd=='info':
         recur = [fn for fn in sys.argv[2:] if fn=='--recur']
         if recur:
@@ -284,6 +289,11 @@ def main():
                     fmtmpl8 = '{:<%d}  {:>%d}',
                     cnvf = (str,str),
                     )
+        elif cmd=='env-upload':
+            outf = io.BytesIO()
+            showEnv(outf)
+            outf.seek(0)
+            pypi.upload(u,p,'cache','environ','info',readable=outf)
         else:
             raise ValueError('%s: unknown command %r' % (PROG,cmd))
 if __name__=='__main__':
