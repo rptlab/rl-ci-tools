@@ -263,7 +263,7 @@ def main():
             recur = True
         tabulate([_file_info(i) for i in _list_fs(sys.argv[2:],recur)])
     elif cmd=='help':
-        print('Usage %s [test|info|env|env-upload|rl-pip-install|download-[resources|packages]|upload-[resources|packages]|[packages|resources]-info] path....' % PROG)
+        print('Usage %s [test|info|env|env-upload|rl-pip-install|download-[resources|packages]|upload-[resources|packages]|[package|resources]-info] path....' % PROG)
     else:
         pypi = PyPiRequestor(debug=debug)
         if cmd=='test':
