@@ -19,6 +19,7 @@ authors = [
 
 [tool.setuptools]
 py-modules=["rl_ci_tools"]
+license-files=["LICENSE"]
 
 [tool.setuptools.dynamic]
 version = {attr = "rl_ci_tools.VERSION"}
