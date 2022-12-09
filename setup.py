@@ -18,7 +18,7 @@ if __name__=='__main__':
         description='Continuous Integration Support for ReportLab and friends',
         author='Robin Becker',
         author_email='andy@reportlab.com',
-        url='https://bitbucket.org/MrRLBitBucket/rl_ci_tools',
+        url='https://hg.reportlab.com/hg/rl-ci-tools',
         py_modules=['rl_ci_tools'],
         requires=['requests'],
         install_requires=['requests'],

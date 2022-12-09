@@ -1,4 +1,4 @@
-VERSION='0.0.5'
+VERSION='0.0.6'
 import os, sys, glob, time, json, io
 from urllib.parse import quote as urlQuote
 PROG=os.path.basename(sys.argv[0])
