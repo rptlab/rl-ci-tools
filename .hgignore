@@ -49,3 +49,6 @@ syntax: regexp
 ^bin/
 ^[tT]cl/
 ^[iI]nclude/
+^dist/
+^build/
+^.*\.egg-info/

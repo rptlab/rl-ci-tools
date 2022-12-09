@@ -1,3 +1,24 @@
 [build-system]
 requires = ["setuptools","wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name="rl_ci_tools"
+dynamic=["version"]
+description="Continuous Integration Support for ReportLab and friends"
+requires-python=">=3.7"
+dependencies = ["requests"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+authors = [
+  { name="Robin Becker", email="robin@reportlab.com" },
+]
+
+[tool.setuptools]
+py-modules=["rl_ci_tools"]
+
+[tool.setuptools.dynamic]
+version = {attr = "rl_ci_tools.VERSION"}
